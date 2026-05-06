@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SLS – GA Report · April 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f0f4f8;--surface:#fff;--border:#dde4ee;
+  --text:#0c1a2e;--text2:#4a5e7a;--text3:#8fa3bd;
+  --accent:#0f5fa8;--accent-lt:#e8f1fb;
+  --teal:#0891b2;--orange:#f59e0b;--purple:#7c3aed;--green:#059669;
+  --shadow:0 2px 14px rgba(10,25,60,.07);
+  --shadow-lg:0 8px 40px rgba(10,25,60,.13);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:34px;height:34px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:18px;height:18px;fill:#fff}
+.brand-name{font-weight:800;font-size:15px;letter-spacing:-.3px}
+.brand-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.period-badge{background:var(--accent-lt);color:var(--accent);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;letter-spacing:.3px}
+.btn-print{background:var(--accent);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s}
+.btn-print:hover{background:#0a4a85}
+.btn-print svg{width:15px;height:15px}
+
+.content{max-width:1180px;margin:0 auto;padding:36px 32px}
+
+.report-head{margin-bottom:30px;display:flex;justify-content:space-between;align-items:flex-end}
+.report-head h1{font-size:26px;font-weight:800;letter-spacing:-.6px}
+.report-head p{color:var(--text2);font-size:13px;margin-top:5px}
+.report-head-right{text-align:right}
+.avg-session{font-size:12px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:6px 14px;border-radius:8px}
+.avg-session span{font-weight:700;color:var(--accent)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--kpi-color,var(--accent))}
+.kpi-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.kpi-icon svg{width:18px;height:18px}
+.kpi-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kpi-value{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;color:var(--text);line-height:1}
+.kpi-note{font-size:11px;color:var(--text3);margin-top:6px}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.panel-head{padding:18px 22px 0;display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:14px;font-weight:800;letter-spacing:-.2px}
+.panel-sub{font-size:11px;color:var(--text3);background:var(--bg);padding:3px 10px;border-radius:100px;font-weight:600}
+.panel-body{padding:20px 22px}
+.chart-wrap{position:relative;height:220px}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
+
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--bg);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:9px 14px;text-align:left}
+tbody tr{border-top:1px solid var(--border)}
+tbody tr:hover{background:#f6f9fd}
+tbody td{padding:10px 14px;font-size:13px;color:var(--text)}
+td.num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;text-align:right}
+td.eng{font-size:12px;color:var(--text2);text-align:right}
+.bar-cell{display:flex;align-items:center;gap:8px}
+.bar-bg{flex:1;height:6px;background:var(--bg);border-radius:100px;overflow:hidden}
+.bar-fill{height:100%;border-radius:100px;background:var(--accent)}
+.rank{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-size:10px;font-weight:800;background:var(--bg);color:var(--text3)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px}
+
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;letter-spacing:.3px}
+.tag-high{background:#dcfce7;color:#15803d}
+.tag-mid{background:#fef9c3;color:#a16207}
+.tag-low{background:#f1f5f9;color:#64748b}
+
+.footer{text-align:center;font-size:11px;color:var(--text3);padding:24px 0 12px;border-top:1px solid var(--border);margin-top:12px}
+
+@media print{
+  .topbar{position:static!important}
+  .btn-print{display:none}
+  body{background:#fff}
+  .panel,.kpi{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .content{padding:20px}
+  .kpi-grid,.two-col,.three-col{page-break-inside:avoid}
+  .panel{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" stroke-width="2" fill="none"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">System Level Solutions</div>
+      <div class="brand-sub">Google Analytics Report · slscorp.com</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="period-badge">1 Apr – 30 Apr 2026</div>
+    <button class="btn-print" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+      Export PDF
+    </button>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="report-head">
+    <div>
+      <h1>Website Analytics Report</h1>
+      <p>System Level Solutions · April 2026 · Generated on 30 April 2026</p>
+    </div>
+    <div class="report-head-right">
+      <div class="avg-session">Avg. Session Duration: <span>2m 26s</span></div>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi" style="--kpi-color:#0f5fa8">
+      <div class="kpi-icon" style="background:#e8f1fb"><svg viewBox="0 0 24 24" fill="none" stroke="#0f5fa8" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div class="kpi-label">Total Users</div>
+      <div class="kpi-value">1,287</div>
+      <div class="kpi-note">1,227 new users (95.3%)</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#0891b2">
+      <div class="kpi-icon" style="background:#ecfeff"><svg viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="kpi-label">Total Sessions</div>
+      <div class="kpi-value">1,572</div>
+      <div class="kpi-note">Across all channels</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#f59e0b">
+      <div class="kpi-icon" style="background:#fffbeb"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+      <div class="kpi-label">Page Views</div>
+      <div class="kpi-value">2,427</div>
+      <div class="kpi-note">Across 68+ pages</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#7c3aed">
+      <div class="kpi-icon" style="background:#f5f3ff"><svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <div class="kpi-label">Scroll Events</div>
+      <div class="kpi-value">1,165</div>
+      <div class="kpi-note">22 form starts · 59 clicks</div>
+    </div>
+  </div>
+
+  <!-- DAILY TREND -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">📈 Daily Active Users Trend</span>
+      <span class="panel-sub">Apr 1 – Apr 30, 2026</span>
+    </div>
+    <div class="panel-body">
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PAGES + TRAFFIC -->
+  <div class="two-col">
+    <!-- TOP PAGES -->
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">📄 Pages by Views</span>
+        <span class="panel-sub">Top 15</span>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>#</th><th>Page</th><th style="text-align:right">Views</th><th>Avg. Time</th><th style="min-width:80px">Share</th></tr></thead>
+          <tbody id="pagesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRAFFIC SOURCE -->
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">🔗 Traffic Sources</span>
+        <span class="panel-sub">Sessions</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:200px"><canvas id="trafficChart"></canvas></div>
+        <table style="margin-top:16px">
+          <thead><tr><th>Channel</th><th style="text-align:right">Sessions</th><th style="text-align:right">Eng. Rate</th><th style="text-align:right">Avg. Time</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="background:#0f5fa8"></span>Organic Search</td><td class="num">852</td><td class="eng">61.2%</td><td class="eng">42s</td></tr>
+            <tr><td><span class="dot" style="background:#0891b2"></span>Direct</td><td class="num">662</td><td class="eng">25.2%</td><td class="eng">13s</td></tr>
+            <tr><td><span class="dot" style="background:#f59e0b"></span>Referral</td><td class="num">30</td><td class="eng">76.7%</td><td class="eng">30s</td></tr>
+            <tr><td><span class="dot" style="background:#7c3aed"></span>Organic Social</td><td class="num">16</td><td class="eng">62.5%</td><td class="eng">36s</td></tr>
+            <tr><td><span class="dot" style="background:#94a3b8"></span>Unassigned</td><td class="num">11</td><td class="eng">36.4%</td><td class="eng">22s</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- GEO -->
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">🌍 Top Countries</span>
+        <span class="panel-sub">Active Users · % of top 7</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:210px"><canvas id="geoChart"></canvas></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">🌐 Global Reach</span>
+        <span class="panel-sub">Top Cities</span>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>#</th><th>Country</th><th style="text-align:right">Users</th><th style="text-align:right">% Share</th></tr></thead>
+          <tbody>
+            <tr><td><span class="rank">1</span></td><td>🇮🇳 India</td><td class="num">672</td><td class="eng">52.4%</td></tr>
+            <tr><td><span class="rank">2</span></td><td>🇺🇸 USA</td><td class="num">197</td><td class="eng">15.4%</td></tr>
+            <tr><td><span class="rank">3</span></td><td>🇸🇬 Singapore</td><td class="num">157</td><td class="eng">12.2%</td></tr>
+            <tr><td><span class="rank">4</span></td><td>🇨🇳 China</td><td class="num">69</td><td class="eng">5.4%</td></tr>
+            <tr><td><span class="rank">5</span></td><td>🇬🇧 United Kingdom</td><td class="num">41</td><td class="eng">3.2%</td></tr>
+            <tr><td><span class="rank">6</span></td><td>🇩🇪 Germany</td><td class="num">20</td><td class="eng">1.6%</td></tr>
+            <tr><td><span class="rank">7</span></td><td>🇻🇳 Vietnam</td><td class="num">19</td><td class="eng">1.5%</td></tr>
+            <tr><td><span class="rank">8</span></td><td>🇭🇰 Hong Kong</td><td class="num">17</td><td class="eng">1.3%</td></tr>
+            <tr><td><span class="rank">9</span></td><td>🇳🇱 Netherlands</td><td class="num">8</td><td class="eng">0.6%</td></tr>
+            <tr><td><span class="rank">10</span></td><td>🇯🇵 Japan</td><td class="num">8</td><td class="eng">0.6%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVICE + OS + BROWSER -->
+  <div class="three-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">📱 Device Type</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="deviceChart"></canvas></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">💻 Operating System</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="osChart"></canvas></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🌐 Browser</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="browserChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">System Level Solutions (slscorp.com) · Google Analytics 4 · Report Period: 1 Apr – 30 Apr 2026 · Generated 30 Apr 2026</div>
+</div>
+
+<script>
+// ── PAGES TABLE ──
+const pages=[
+  {path:'/',views:1230,time:'14s'},
+  {path:'/contact',views:298,time:'31s'},
+  {path:'/about',views:229,time:'51s'},
+  {path:'/home',views:104,time:'54s'},
+  {path:'/evcharger',views:46,time:'48s'},
+  {path:'/iot',views:44,time:'29s'},
+  {path:'/smartmeter',views:37,time:'30s'},
+  {path:'/ipcore',views:36,time:'29s'},
+  {path:'/electronics',views:27,time:'61s'},
+  {path:'/gaming',views:27,time:'46s'},
+  {path:'/ml',views:27,time:'40s'},
+  {path:'/solar',views:27,time:'43s'},
+  {path:'/about-slscorp/about-systemlevelsolution.html',views:23,time:'0s'},
+  {path:'/privacy-policy.html',views:21,time:'0s'},
+  {path:'/softdev',views:21,time:'45s'}
+];
+const totalViews=pages.reduce((a,p)=>a+p.views,0);
+const tbody=document.getElementById('pagesBody');
+pages.forEach((p,i)=>{
+  const pct=Math.round(p.views/totalViews*100);
+  const w=Math.round(p.views/1230*100);
+  tbody.innerHTML+=`<tr>
+    <td><span class="rank">${i+1}</span></td>
+    <td style="font-size:12px;color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.path}">${p.path}</td>
+    <td class="num">${p.views}</td>
+    <td class="eng">${p.time}</td>
+    <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${w}%"></div></div><span style="font-size:11px;color:var(--text3);min-width:28px">${pct}%</span></div></td>
+  </tr>`;
+});
+
+// ── DAILY TREND ──
+const trendLabels=[];
+const daily=[45,57,65,27,28,47,53,62,61,94,45,28,51,53,49,49,48,36,28,46,36,47,49,53,31,13,29,51,41,35];
+daily.forEach((_,i)=>trendLabels.push(i%4===0?`Apr ${i+1}`:''));
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{labels:trendLabels,datasets:[{
+    label:'Active Users',data:daily,
+    borderColor:'#0f5fa8',backgroundColor:'rgba(15,95,168,0.08)',
+    borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#0f5fa8',tension:.4,fill:true
+  }]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} users`}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#8fa3bd'}},
+      y:{grid:{color:'#eef2f8'},ticks:{font:{size:10},color:'#8fa3bd'},beginAtZero:true}
+    }
+  }
+});
+
+// ── TRAFFIC DONUT ──
+const trafficRaw=[852,662,30,16,11,1];
+const trafficTotal=trafficRaw.reduce((a,b)=>a+b,0);
+const trafficPct=trafficRaw.map(v=>parseFloat((v/trafficTotal*100).toFixed(1)));
+const trafficColors=['#0f5fa8','#0891b2','#f59e0b','#7c3aed','#94a3b8','#64748b'];
+const trafficLabels=['Organic Search','Direct','Referral','Organic Social','Unassigned','Organic Video'];
+new Chart(document.getElementById('trafficChart'),{
+  type:'doughnut',
+  data:{labels:trafficLabels,datasets:[{data:trafficPct,backgroundColor:trafficColors,borderWidth:0,hoverOffset:4}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:10},padding:10,usePointStyle:true,
+        generateLabels:chart=>trafficLabels.map((lbl,i)=>({text:`${lbl} (${trafficPct[i]}%)`,fillStyle:trafficColors[i],strokeStyle:'#fff',lineWidth:0,index:i}))
+      }},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${trafficPct[ctx.dataIndex]}% (${trafficRaw[ctx.dataIndex]} sessions)`}}
+    },
+    cutout:'62%'
+  }
+});
+
+// ── GEO BAR ──
+const geoRaw=[672,197,157,69,41,20,19];
+const geoTotal=geoRaw.reduce((a,b)=>a+b,0);
+const geoPct=geoRaw.map(v=>parseFloat((v/geoTotal*100).toFixed(1)));
+new Chart(document.getElementById('geoChart'),{
+  type:'bar',
+  data:{labels:['India','USA','Singapore','China','UK','Germany','Vietnam'],datasets:[{label:'Share',data:geoPct,backgroundColor:'rgba(15,95,168,0.82)',borderRadius:6}]},
+  options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.x}% (${geoRaw[ctx.dataIndex]} users)`}}},
+    scales:{
+      x:{grid:{color:'#eef2f8'},ticks:{font:{size:10},color:'#8fa3bd',callback:v=>v+'%'},beginAtZero:true},
+      y:{grid:{display:false},ticks:{font:{size:10},color:'#8fa3bd'}}
+    }
+  }
+});
+
+// ── DEVICE DONUT ──
+const deviceRaw=[897,387];
+const deviceTotal=deviceRaw.reduce((a,b)=>a+b,0);
+const devicePct=deviceRaw.map(v=>parseFloat((v/deviceTotal*100).toFixed(1)));
+const deviceColors=['#0f5fa8','#0891b2'];
+const deviceLabels=['Desktop','Mobile'];
+new Chart(document.getElementById('deviceChart'),{
+  type:'doughnut',
+  data:{labels:deviceLabels,datasets:[{data:devicePct,backgroundColor:deviceColors,borderWidth:0}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:10},padding:8,usePointStyle:true,
+        generateLabels:()=>deviceLabels.map((lbl,i)=>({text:`${lbl} (${devicePct[i]}%)`,fillStyle:deviceColors[i],strokeStyle:'#fff',lineWidth:0,index:i}))
+      }},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${devicePct[ctx.dataIndex]}% (${deviceRaw[ctx.dataIndex]} users)`}}
+    },
+    cutout:'60%'
+  }
+});
+
+// ── OS BAR ──
+const osRaw=[704,316,102,89,71,2];
+const osTotal=osRaw.reduce((a,b)=>a+b,0);
+const osPct=osRaw.map(v=>parseFloat((v/osTotal*100).toFixed(1)));
+new Chart(document.getElementById('osChart'),{
+  type:'bar',
+  data:{labels:['Windows','Android','Mac','Linux','iOS','ChromeOS'],datasets:[{data:osPct,backgroundColor:['#0f5fa8','#0891b2','#f59e0b','#7c3aed','#94a3b8','#059669'],borderRadius:5}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}% (${osRaw[ctx.dataIndex]} users)`}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:9},color:'#8fa3bd'}},
+      y:{grid:{color:'#eef2f8'},ticks:{font:{size:9},color:'#8fa3bd',callback:v=>v+'%'},beginAtZero:true}
+    }
+  }
+});
+
+// ── BROWSER DONUT ──
+const browserRaw=[1053,80,65,43,22,9,4,4];
+const browserTotal=browserRaw.reduce((a,b)=>a+b,0);
+const browserPct=browserRaw.map(v=>parseFloat((v/browserTotal*100).toFixed(1)));
+const browserColors=['#0f5fa8','#0891b2','#f59e0b','#7c3aed','#f97316','#94a3b8','#059669','#db2777'];
+const browserLabels=['Chrome','Edge','Safari','Android WV','Firefox','Samsung','Opera','Safari (in-app)'];
+new Chart(document.getElementById('browserChart'),{
+  type:'doughnut',
+  data:{labels:browserLabels,datasets:[{data:browserPct,backgroundColor:browserColors,borderWidth:0}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:9},padding:6,usePointStyle:true,
+        generateLabels:()=>browserLabels.map((lbl,i)=>({text:`${lbl} (${browserPct[i]}%)`,fillStyle:browserColors[i],strokeStyle:'#fff',lineWidth:0,index:i}))
+      }},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${browserPct[ctx.dataIndex]}% (${browserRaw[ctx.dataIndex]} users)`}}
+    },
+    cutout:'58%'
+  }
+});
+</script>
+</body>
+</html>

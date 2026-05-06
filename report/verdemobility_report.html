@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VerdeMobility – GA Report · April 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f2f7f4;--surface:#fff;--border:#deeee6;
+  --text:#0b1f13;--text2:#4a6b57;--text3:#8aaa96;
+  --accent:#16a34a;--accent-lt:#ecfdf5;
+  --blue:#3b82f6;--orange:#f59e0b;--purple:#8b5cf6;--red:#ef4444;
+  --shadow:0 2px 14px rgba(10,40,20,.07);
+  --shadow-lg:0 8px 40px rgba(10,40,20,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:34px;height:34px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:18px;height:18px;fill:#fff}
+.brand-name{font-weight:800;font-size:15px;letter-spacing:-.3px}
+.brand-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.period-badge{background:var(--accent-lt);color:var(--accent);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;letter-spacing:.3px}
+.btn-print{background:var(--accent);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s}
+.btn-print:hover{background:#15803d}
+.btn-print svg{width:15px;height:15px}
+
+.content{max-width:1180px;margin:0 auto;padding:36px 32px}
+
+.report-head{margin-bottom:30px}
+.report-head h1{font-size:26px;font-weight:800;letter-spacing:-.6px}
+.report-head p{color:var(--text2);font-size:13px;margin-top:5px}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--kpi-color,var(--accent))}
+.kpi-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--kpi-bg,var(--accent-lt));margin-bottom:14px}
+.kpi-icon svg{width:18px;height:18px}
+.kpi-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kpi-value{font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;color:var(--text);line-height:1}
+.kpi-note{font-size:11px;color:var(--text3);margin-top:6px}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.panel-head{padding:18px 22px 0;display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:14px;font-weight:800;letter-spacing:-.2px}
+.panel-sub{font-size:11px;color:var(--text3);background:var(--bg);padding:3px 10px;border-radius:100px;font-weight:600}
+.panel-body{padding:20px 22px}
+.chart-wrap{position:relative;height:220px}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
+
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--bg);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:9px 14px;text-align:left}
+tbody tr{border-top:1px solid var(--border)}
+tbody tr:hover{background:#f7fbf8}
+tbody td{padding:10px 14px;font-size:13px;color:var(--text)}
+td.num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;text-align:right}
+.bar-cell{display:flex;align-items:center;gap:8px}
+.bar-bg{flex:1;height:6px;background:var(--bg);border-radius:100px;overflow:hidden}
+.bar-fill{height:100%;border-radius:100px;background:var(--accent)}
+.rank{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-size:10px;font-weight:800;background:var(--bg);color:var(--text3)}
+
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px}
+.footer{text-align:center;font-size:11px;color:var(--text3);padding:24px 0 12px;border-top:1px solid var(--border);margin-top:12px}
+
+@media print{
+  .topbar{position:static!important}
+  .btn-print{display:none}
+  body{background:#fff}
+  .panel,.kpi{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .content{padding:20px}
+  .kpi-grid,.two-col,.three-col{page-break-inside:avoid}
+  .panel{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">VerdeMobility</div>
+      <div class="brand-sub">Google Analytics Report</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="period-badge">1 Apr – 30 Apr 2026</div>
+    <button class="btn-print" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+      Export PDF
+    </button>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="report-head">
+    <h1>Website Analytics Report</h1>
+    <p>VerdeMobility · April 2026 · Generated on 30 April 2026</p>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi" style="--kpi-color:#16a34a;--kpi-bg:#ecfdf5">
+      <div class="kpi-icon" style="background:#ecfdf5"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div class="kpi-label">Active Users</div>
+      <div class="kpi-value">720</div>
+      <div class="kpi-note">689 new users this month</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#3b82f6;--kpi-bg:#eff6ff">
+      <div class="kpi-icon" style="background:#eff6ff"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="kpi-label">Total Sessions</div>
+      <div class="kpi-value">874</div>
+      <div class="kpi-note">Across all channels</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#f59e0b;--kpi-bg:#fffbeb">
+      <div class="kpi-icon" style="background:#fffbeb"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+      <div class="kpi-label">Page Views</div>
+      <div class="kpi-value">1,355</div>
+      <div class="kpi-note">Across 29 pages</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#8b5cf6;--kpi-bg:#f5f3ff">
+      <div class="kpi-icon" style="background:#f5f3ff"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <div class="kpi-label">Scroll Events</div>
+      <div class="kpi-value">737</div>
+      <div class="kpi-note">High engagement signal</div>
+    </div>
+  </div>
+
+  <!-- DAILY TREND -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">📈 Daily Active Users Trend</span>
+      <span class="panel-sub">Apr 1 – Apr 30, 2026</span>
+    </div>
+    <div class="panel-body">
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PAGES + TRAFFIC -->
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">📄 Pages by Views</span>
+        <span class="panel-sub">Top 12</span>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>#</th><th>Page</th><th style="text-align:right">Views</th><th style="min-width:90px">Share</th></tr></thead>
+          <tbody id="pagesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">🔗 Traffic Sources</span>
+        <span class="panel-sub">Sessions</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:190px"><canvas id="trafficChart"></canvas></div>
+        <table style="margin-top:16px">
+          <thead><tr><th>Channel</th><th style="text-align:right">Sessions</th><th style="text-align:right">Eng. Rate</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="background:#16a34a"></span>Organic Search</td><td class="num">443</td><td class="num">54.6%</td></tr>
+            <tr><td><span class="dot" style="background:#3b82f6"></span>Direct</td><td class="num">364</td><td class="num">28.0%</td></tr>
+            <tr><td><span class="dot" style="background:#94a3b8"></span>Unassigned</td><td class="num">40</td><td class="num">35.0%</td></tr>
+            <tr><td><span class="dot" style="background:#f59e0b"></span>Referral</td><td class="num">16</td><td class="num">93.8%</td></tr>
+            <tr><td><span class="dot" style="background:#8b5cf6"></span>Organic Social</td><td class="num">10</td><td class="num">70.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- GEO + DEVICE + OS -->
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">🌍 Top Countries</span>
+        <span class="panel-sub">Active Users</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:200px"><canvas id="geoChart"></canvas></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head">
+        <span class="panel-title">🏙️ Top Cities</span>
+        <span class="panel-sub">Active Users</span>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>City</th><th style="text-align:right">Users</th></tr></thead>
+          <tbody>
+            <tr><td>Ahmedabad</td><td class="num">106</td></tr>
+            <tr><td>Ashburn</td><td class="num">53</td></tr>
+            <tr><td>Vadodara</td><td class="num">43</td></tr>
+            <tr><td>Mumbai</td><td class="num">34</td></tr>
+            <tr><td>North Charleston</td><td class="num">30</td></tr>
+            <tr><td>Pune</td><td class="num">23</td></tr>
+            <tr><td>Bengaluru</td><td class="num">21</td></tr>
+            <tr><td>Delhi</td><td class="num">18</td></tr>
+            <tr><td>Surat</td><td class="num">17</td></tr>
+            <tr><td>London</td><td class="num">10</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVICE + OS + AGE -->
+  <div class="three-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">📱 Device Type</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="deviceChart"></canvas></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">💻 Operating System</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="osChart"></canvas></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">👥 Age Group</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="ageChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">VerdeMobility · Google Analytics 4 · Report Period: 1 Apr – 30 Apr 2026 · Generated 30 Apr 2026</div>
+</div>
+
+<script>
+// Pages
+const pages=[
+  {path:'/',views:686},{path:'/get-in-touch',views:144},{path:'/hardware',views:122},
+  {path:'/controllers',views:74},{path:'/about',views:73},{path:'/partner-with-us',views:51},
+  {path:'/host-charger',views:33},{path:'/cms',views:27},{path:'/mobile-app',views:27},
+  {path:'/cpos',views:24},{path:'/fleet',views:13},{path:'/home-charger',views:10}
+];
+const maxV=686;
+const tbody=document.getElementById('pagesBody');
+pages.forEach((p,i)=>{
+  const pct=Math.round(p.views/maxV*100);
+  tbody.innerHTML+=`<tr>
+    <td><span class="rank">${i+1}</span></td>
+    <td style="font-size:12px;color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.path}">${p.path}</td>
+    <td class="num">${p.views}</td>
+    <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div><span style="font-size:11px;color:var(--text3);min-width:28px">${pct}%</span></div></td>
+  </tr>`;
+});
+
+// Daily trend
+const labels=Array.from({length:30},(_,i)=>{
+  const d=new Date(2026,3,1+i);
+  return i%4===0?`Apr ${i+1}`:'';
+});
+const daily=[44,47,19,18,31,40,53,22,29,19,17,20,32,43,26,23,18,23,10,20,18,16,29,40,8,12,22,12,26,3];
+
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{labels,datasets:[{label:'Active Users',data:daily,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.08)',borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#16a34a',tension:.4,fill:true}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8aaa96'}},y:{grid:{color:'#e8f4ec'},ticks:{font:{size:10},color:'#8aaa96'},beginAtZero:true}}}
+});
+
+// Traffic donut — % labels, numbers + % on hover
+const trafficRaw=[443,364,40,16,10];
+const trafficTotal=trafficRaw.reduce((a,b)=>a+b,0);
+const trafficPct=trafficRaw.map(v=>parseFloat((v/trafficTotal*100).toFixed(1)));
+const trafficColors=['#16a34a','#3b82f6','#94a3b8','#f59e0b','#8b5cf6'];
+const trafficLabels=['Organic Search','Direct','Unassigned','Referral','Organic Social'];
+new Chart(document.getElementById('trafficChart'),{
+  type:'doughnut',
+  data:{labels:trafficLabels,datasets:[{data:trafficPct,backgroundColor:trafficColors,borderWidth:0,hoverOffset:4}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:10},padding:10,usePointStyle:true,generateLabels:chart=>{
+        const ds=chart.data.datasets[0];
+        return trafficLabels.map((lbl,i)=>({text:`${lbl} (${trafficPct[i]}%)`,fillStyle:trafficColors[i],strokeStyle:'#fff',lineWidth:0,index:i}));
+      }}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${trafficPct[ctx.dataIndex]}% (${trafficRaw[ctx.dataIndex]} sessions)`}}
+    },
+    cutout:'62%'
+  }
+});
+
+// Geo — % of total, numbers + % on hover
+const geoRaw=[459,152,49,12,7,4,3];
+const geoTotal=geoRaw.reduce((a,b)=>a+b,0);
+const geoPct=geoRaw.map(v=>parseFloat((v/geoTotal*100).toFixed(1)));
+new Chart(document.getElementById('geoChart'),{
+  type:'bar',
+  data:{labels:['India','USA','Germany','UK','China','Brazil','Ireland'],datasets:[{label:'Share',data:geoPct,backgroundColor:'rgba(22,163,74,0.8)',borderRadius:6}]},
+  options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.x}% (${geoRaw[ctx.dataIndex]} users)`}}},
+    scales:{
+      x:{grid:{color:'#e8f4ec'},ticks:{font:{size:10},color:'#8aaa96',callback:v=>v+'%'},beginAtZero:true},
+      y:{grid:{display:false},ticks:{font:{size:10},color:'#8aaa96'}}
+    }
+  }
+});
+
+// Device donut — % labels, numbers + % on hover
+const deviceRaw=[447,273,1];
+const deviceTotal=deviceRaw.reduce((a,b)=>a+b,0);
+const devicePct=deviceRaw.map(v=>parseFloat((v/deviceTotal*100).toFixed(1)));
+const deviceColors=['#16a34a','#3b82f6','#f59e0b'];
+const deviceLabels=['Desktop','Mobile','Tablet'];
+new Chart(document.getElementById('deviceChart'),{
+  type:'doughnut',
+  data:{labels:deviceLabels,datasets:[{data:devicePct,backgroundColor:deviceColors,borderWidth:0}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:10},padding:8,usePointStyle:true,generateLabels:chart=>{
+        return deviceLabels.map((lbl,i)=>({text:`${lbl} (${devicePct[i]}%)`,fillStyle:deviceColors[i],strokeStyle:'#fff',lineWidth:0,index:i}));
+      }}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${devicePct[ctx.dataIndex]}% (${deviceRaw[ctx.dataIndex]} users)`}}
+    },
+    cutout:'60%'
+  }
+});
+
+// OS bar — % of total, numbers + % on hover
+const osRaw=[297,193,103,81,46,6];
+const osTotal=osRaw.reduce((a,b)=>a+b,0);
+const osPct=osRaw.map(v=>parseFloat((v/osTotal*100).toFixed(1)));
+new Chart(document.getElementById('osChart'),{
+  type:'bar',
+  data:{labels:['Windows','Android','Mac','iOS','Linux','ChromeOS'],datasets:[{data:osPct,backgroundColor:['#16a34a','#3b82f6','#f59e0b','#8b5cf6','#94a3b8','#06b6d4'],borderRadius:5}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}% (${osRaw[ctx.dataIndex]} users)`}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:9},color:'#8aaa96'}},
+      y:{grid:{color:'#e8f4ec'},ticks:{font:{size:9},color:'#8aaa96',callback:v=>v+'%'},beginAtZero:true}
+    }
+  }
+});
+
+// Age bar — % of known-age users, numbers + % on hover
+const ageRaw=[45,67,56,15];
+const ageTotal=ageRaw.reduce((a,b)=>a+b,0);
+const agePct=ageRaw.map(v=>parseFloat((v/ageTotal*100).toFixed(1)));
+new Chart(document.getElementById('ageChart'),{
+  type:'bar',
+  data:{labels:['18-24','25-34','35-44','45-54'],datasets:[{data:agePct,backgroundColor:'rgba(139,92,246,0.8)',borderRadius:5}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}% (${ageRaw[ctx.dataIndex]} users)`}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#8aaa96'}},
+      y:{grid:{color:'#e8f4ec'},ticks:{font:{size:10},color:'#8aaa96',callback:v=>v+'%'},beginAtZero:true}
+    }
+  }
+});
+</script>
+</body>
+</html>
