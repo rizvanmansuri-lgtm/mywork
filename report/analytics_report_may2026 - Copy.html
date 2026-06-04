@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Analytics Report · May 2026 · All Sites</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f0f2f8;--surface:#fff;--border:#e2e6f0;
+  --text:#0d1526;--text2:#556080;--text3:#96a0bb;
+  --shadow:0 2px 16px rgba(10,20,60,.07);
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ── TOPBAR ── */
+.topbar{background:#0d1526;padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;height:56px}
+.topbar-brand{display:flex;align-items:center;gap:10px;color:#fff}
+.topbar-brand svg{width:22px;height:22px;opacity:.9}
+.topbar-brand-text{font-weight:700;font-size:15px;letter-spacing:-.3px}
+.topbar-brand-sub{font-size:11px;opacity:.45;margin-left:6px;font-weight:400}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.badge-month{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:600;padding:4px 12px;border-radius:100px;letter-spacing:.3px}
+.btn-pdf{background:#fff;color:#0d1526;border:none;padding:7px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
+.btn-pdf:hover{background:#e8f1ff;color:#2c4de8}
+.btn-pdf svg{width:13px;height:13px}
+
+/* ── SITE TABS ── */
+.site-tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;gap:4px;position:sticky;top:56px;z-index:100}
+.site-tab{padding:14px 22px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:3px solid transparent;transition:.15s;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.site-tab:hover{color:var(--text2)}
+.site-tab.active{color:var(--tab-color,#2c4de8);border-bottom-color:var(--tab-color,#2c4de8)}
+.site-tab .tab-dot{width:8px;height:8px;border-radius:50%;background:var(--tab-color)}
+
+/* ── PAGE CONTENT ── */
+.site-content{display:none}
+.site-content.active{display:block}
+.content{max-width:1200px;margin:0 auto;padding:32px 32px 48px}
+
+/* ── REPORT HEADER ── */
+.report-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
+.report-header h1{font-size:24px;font-weight:800;letter-spacing:-.6px}
+.report-header p{color:var(--text2);font-size:13px;margin-top:4px}
+.mom-summary{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;color:var(--text2);text-align:right}
+.mom-summary strong{font-weight:700;color:var(--text)}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--kpi-color,#2c4de8)}
+.kpi-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.kpi-value{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-1px;line-height:1}
+.kpi-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.kpi-note{font-size:11px;color:var(--text3)}
+.kpi-mom{font-size:11px;font-weight:700;padding:2px 7px;border-radius:100px}
+.kpi-mom.up{background:#dcfce7;color:#15803d}
+.kpi-mom.down{background:#fee2e2;color:#b91c1c}
+.kpi-mom.flat{background:#f1f5f9;color:#64748b}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+.panel-head{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-title{font-size:13px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+.panel-sub{font-size:11px;color:var(--text3);background:var(--bg);padding:3px 10px;border-radius:100px;font-weight:600}
+.panel-body{padding:0 20px 20px}
+.chart-wrap{position:relative}
+
+/* ── GRID LAYOUTS ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px}
+.col-6040{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-bottom:18px}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--bg);font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;text-align:left}
+tbody tr{border-top:1px solid var(--border)}
+tbody tr:hover{background:#fafbff}
+tbody td{padding:9px 12px;font-size:12px;color:var(--text)}
+td.num{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;text-align:right}
+td.eng{font-size:11px;color:var(--text2);text-align:right}
+.bar-cell{display:flex;align-items:center;gap:7px}
+.bar-bg{flex:1;height:5px;background:var(--bg);border-radius:100px;overflow:hidden;min-width:40px}
+.bar-fill{height:100%;border-radius:100px}
+.rank{display:inline-flex;width:18px;height:18px;border-radius:5px;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:var(--bg);color:var(--text3)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;flex-shrink:0}
+
+/* ── INSIGHTS ── */
+.insights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.insight-icon{font-size:20px;margin-bottom:8px}
+.insight-title{font-size:12px;font-weight:800;margin-bottom:5px;color:var(--text)}
+.insight-body{font-size:12px;color:var(--text2);line-height:1.55}
+.insight-card.warn{border-left:3px solid #f59e0b}
+.insight-card.good{border-left:3px solid #10b981}
+.insight-card.info{border-left:3px solid #3b82f6}
+
+/* ── FOOTER ── */
+.report-footer{text-align:center;font-size:11px;color:var(--text3);padding:20px 0 8px;border-top:1px solid var(--border);margin-top:8px}
+
+/* ── PRINT ── */
+@media print{
+  .topbar{position:static!important;background:#0d1526!important;-webkit-print-color-adjust:exact}
+  .site-tabs{position:static!important}
+  .btn-pdf{display:none}
+  body{background:#fff}
+  .panel,.kpi{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .site-content{display:none!important}
+  .site-content.print-active{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18"/></svg>
+    <span class="topbar-brand-text">Analytics Dashboard</span>
+    <span class="topbar-brand-sub">All Sites · May 2026</span>
+  </div>
+  <div class="topbar-right">
+    <div class="badge-month">May 1 – 29, 2026</div>
+    <button class="btn-pdf" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+      Export PDF
+    </button>
+  </div>
+</div>
+
+<!-- SITE TABS -->
+<div class="site-tabs">
+  <div class="site-tab active" style="--tab-color:#6d28d9" onclick="switchTab('nebulae',this)">
+    <span class="tab-dot" style="background:#6d28d9"></span>Nebulae
+  </div>
+  <div class="site-tab" style="--tab-color:#16a34a" onclick="switchTab('verde',this)">
+    <span class="tab-dot" style="background:#16a34a"></span>VerdeMobility
+  </div>
+  <div class="site-tab" style="--tab-color:#0f5fa8" onclick="switchTab('sls',this)">
+    <span class="tab-dot" style="background:#0f5fa8"></span>System Level Solutions
+  </div>
+</div>
+
+<!-- ═══════════════ NEBULAE ═══════════════ -->
+<div id="tab-nebulae" class="site-content active">
+<div class="content">
+  <div class="report-header">
+    <div>
+      <h1>Nebulae · May 2026</h1>
+      <p>nebulae.com · GA4 · Report Period: May 1 – 29, 2026</p>
+    </div>
+    <div class="mom-summary">
+      vs April 2026<br>
+      <strong>Users: 183 → 216 &nbsp;▲18%</strong><br>
+      Sessions: 191 → 228 &nbsp;▲19%<br>
+      Views: 237 → 283 &nbsp;▲19%
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi" style="--kpi-color:#6d28d9">
+      <div class="kpi-label">Active Users</div>
+      <div class="kpi-value">216</div>
+      <div class="kpi-meta"><span class="kpi-note">192 new (88.9%)</span><span class="kpi-mom up">▲ 18%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#0891b2">
+      <div class="kpi-label">Sessions</div>
+      <div class="kpi-value">228</div>
+      <div class="kpi-meta"><span class="kpi-note">4 channels</span><span class="kpi-mom up">▲ 19%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#f59e0b">
+      <div class="kpi-label">Page Views</div>
+      <div class="kpi-value">283</div>
+      <div class="kpi-meta"><span class="kpi-note">Across 20 pages</span><span class="kpi-mom up">▲ 19%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#10b981">
+      <div class="kpi-label">Avg. Session Time</div>
+      <div class="kpi-value">18s</div>
+      <div class="kpi-meta"><span class="kpi-note">Across all sessions</span><span class="kpi-mom flat">— n/a</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#ef4444">
+      <div class="kpi-label">Engagement Events</div>
+      <div class="kpi-value">55</div>
+      <div class="kpi-meta"><span class="kpi-note">Scrolls · 8 downloads</span><span class="kpi-mom flat">—</span></div>
+    </div>
+  </div>
+
+  <!-- TREND -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">📈 Daily Active Users — May 2026</span>
+      <span class="panel-sub">With Avg. Session Time overlay</span>
+    </div>
+    <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="neb-trend"></canvas></div></div>
+  </div>
+
+  <div class="col-6040">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">📄 Pages by Views</span><span class="panel-sub">Top 12</span></div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>#</th><th>Page</th><th style="text-align:right">Views</th><th style="text-align:right">Avg. Time</th><th style="min-width:80px">Share</th></tr></thead>
+          <tbody id="neb-pages"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🔗 Traffic Sources</span><span class="panel-sub">% + Sessions on hover</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="neb-traffic"></canvas></div>
+        <table style="margin-top:14px">
+          <thead><tr><th>Channel</th><th style="text-align:right">Sessions</th><th style="text-align:right">Eng. Rate</th><th style="text-align:right">Avg. Time</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="background:#6d28d9"></span>Direct</td><td class="num">160</td><td class="eng">15.6%</td><td class="eng">7.7s</td></tr>
+            <tr><td><span class="dot" style="background:#0891b2"></span>Referral</td><td class="num">30</td><td class="eng">56.7%</td><td class="eng">66.8s</td></tr>
+            <tr><td><span class="dot" style="background:#10b981"></span>Organic Search</td><td class="num">29</td><td class="eng">65.5%</td><td class="eng">24.9s</td></tr>
+            <tr><td><span class="dot" style="background:#94a3b8"></span>Unassigned</td><td class="num">9</td><td class="eng">0%</td><td class="eng">9.1s</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🌍 Top Countries</span><span class="panel-sub">% of total</span></div>
+      <div class="panel-body"><div class="chart-wrap" style="height:180px"><canvas id="neb-geo"></canvas></div></div>
+    </div>
+    <div class="three-col" style="margin-bottom:0;gap:12px">
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-head" style="margin-bottom:8px"><span class="panel-title">📱 Device</span></div>
+        <div class="panel-body"><div class="chart-wrap" style="height:130px"><canvas id="neb-device"></canvas></div></div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-head" style="margin-bottom:8px"><span class="panel-title">💻 OS</span></div>
+        <div class="panel-body"><div class="chart-wrap" style="height:130px"><canvas id="neb-os"></canvas></div></div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-head" style="margin-bottom:8px"><span class="panel-title">🌐 Browser</span></div>
+        <div class="panel-body"><div class="chart-wrap" style="height:130px"><canvas id="neb-browser"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-head" style="padding:0;margin-bottom:12px"><span class="panel-title" style="font-size:14px">💡 Marketing Insights</span></div>
+  <div class="insights-grid">
+    <div class="insight-card good"><div class="insight-icon">🚀</div><div class="insight-title">Users grew 18% MoM</div><div class="insight-body">Steady growth from 183 → 216. Referral traffic has 56.7% engagement — highest quality channel. Find those referring sites and build more partnerships.</div></div>
+    <div class="insight-card warn"><div class="insight-icon">⚠️</div><div class="insight-title">Direct traffic dominates but disengages</div><div class="insight-body">70% of sessions are Direct with only 15.6% engagement. Visitors land and leave fast — homepage messaging or loading speed may need attention.</div></div>
+    <div class="insight-card info"><div class="insight-icon">🌏</div><div class="insight-title">Global reach — 39 countries</div><div class="insight-body">Vietnam (16 users) and Indonesia (6) are emerging markets. Consider English-language content tailored to APAC IoT use cases to capture this audience.</div></div>
+  </div>
+
+  <div class="report-footer">Nebulae · Google Analytics 4 · May 1–29, 2026 · Generated June 2, 2026</div>
+</div>
+</div>
+
+<!-- ═══════════════ VERDEMOBILITY ═══════════════ -->
+<div id="tab-verde" class="site-content">
+<div class="content">
+  <div class="report-header">
+    <div>
+      <h1>VerdeMobility · May 2026</h1>
+      <p>verdemobility.com · GA4 · Report Period: May 1 – 29, 2026</p>
+    </div>
+    <div class="mom-summary">
+      vs April 2026<br>
+      <strong>Users: 720 → 787 &nbsp;▲9%</strong><br>
+      Sessions: 874 → 1004 &nbsp;▲15%<br>
+      Views: 1,355 → 1,761 &nbsp;▲30%
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi" style="--kpi-color:#16a34a">
+      <div class="kpi-label">Active Users</div>
+      <div class="kpi-value">787</div>
+      <div class="kpi-meta"><span class="kpi-note">745 new (94.7%)</span><span class="kpi-mom up">▲ 9%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#3b82f6">
+      <div class="kpi-label">Sessions</div>
+      <div class="kpi-value">1,004</div>
+      <div class="kpi-meta"><span class="kpi-note">6 channels</span><span class="kpi-mom up">▲ 15%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#f59e0b">
+      <div class="kpi-label">Page Views</div>
+      <div class="kpi-value">1,761</div>
+      <div class="kpi-meta"><span class="kpi-note">29 pages</span><span class="kpi-mom up">▲ 30%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#10b981">
+      <div class="kpi-label">Avg. Session Time</div>
+      <div class="kpi-value">42s</div>
+      <div class="kpi-meta"><span class="kpi-note">Weighted avg.</span><span class="kpi-mom flat">— n/a</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#8b5cf6">
+      <div class="kpi-label">File Downloads</div>
+      <div class="kpi-value">91</div>
+      <div class="kpi-meta"><span class="kpi-note">34 form starts · 25 clicks</span><span class="kpi-mom flat">—</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">📈 Daily Active Users — May 2026</span>
+      <span class="panel-sub">With Avg. Session Time overlay</span>
+    </div>
+    <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="verde-trend"></canvas></div></div>
+  </div>
+
+  <div class="col-6040">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">📄 Pages by Views</span><span class="panel-sub">Top 12</span></div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>#</th><th>Page</th><th style="text-align:right">Views</th><th style="text-align:right">Avg. Time</th><th style="min-width:80px">Share</th></tr></thead>
+          <tbody id="verde-pages"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🔗 Traffic Sources</span><span class="panel-sub">% + Sessions on hover</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="verde-traffic"></canvas></div>
+        <table style="margin-top:14px">
+          <thead><tr><th>Channel</th><th style="text-align:right">Sessions</th><th style="text-align:right">Eng. Rate</th><th style="text-align:right">Avg. Time</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="background:#16a34a"></span>Organic Search</td><td class="num">542</td><td class="eng">55.2%</td><td class="eng">51.9s</td></tr>
+            <tr><td><span class="dot" style="background:#3b82f6"></span>Direct</td><td class="num">384</td><td class="eng">41.7%</td><td class="eng">28.3s</td></tr>
+            <tr><td><span class="dot" style="background:#f59e0b"></span>Referral</td><td class="num">42</td><td class="eng">73.8%</td><td class="eng">53.6s</td></tr>
+            <tr><td><span class="dot" style="background:#94a3b8"></span>Unassigned</td><td class="num">16</td><td class="eng">12.5%</td><td class="eng">26s</td></tr>
+            <tr><td><span class="dot" style="background:#8b5cf6"></span>Organic Social</td><td class="num">12</td><td class="eng">41.7%</td><td class="eng">36.6s</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🌍 Top Countries</span><span class="panel-sub">% of total</span></div>
+      <div class="panel-body"><div class="chart-wrap" style="height:180px"><canvas id="verde-geo"></canvas></div></div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">👥 Audience Demographics</span></div>
+      <div class="panel-body">
+        <div class="two-col" style="gap:12px;margin-bottom:0">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Age Groups</div>
+            <div class="chart-wrap" style="height:120px"><canvas id="verde-age"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Device Type</div>
+            <div class="chart-wrap" style="height:120px"><canvas id="verde-device"></canvas></div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Gender Split (known)</div>
+          <div style="display:flex;gap:16px;align-items:center">
+            <div style="flex:1;background:var(--bg);border-radius:8px;overflow:hidden;height:18px;display:flex">
+              <div style="width:87.9%;background:#3b82f6;height:100%;border-radius:8px 0 0 8px"></div>
+              <div style="flex:1;background:#f472b6;height:100%;border-radius:0 8px 8px 0"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);white-space:nowrap"><span style="color:#3b82f6;font-weight:700">♂ 87.9%</span> &nbsp; <span style="color:#f472b6;font-weight:700">♀ 12.1%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-head" style="padding:0;margin-bottom:12px"><span class="panel-title" style="font-size:14px">💡 Marketing Insights</span></div>
+  <div class="insights-grid">
+    <div class="insight-card good"><div class="insight-icon">📈</div><div class="insight-title">Page views +30% MoM</div><div class="insight-body">Strong content engagement. /controllers (89s avg time) and /hardware (77s) are your most engaging pages — these should be landing pages for paid campaigns.</div></div>
+    <div class="insight-card info"><div class="insight-icon">🇮🇳</div><div class="insight-title">India dominates — 77% of users</div><div class="insight-body">608 of ~787 users are from India — Ahmedabad (107), Bengaluru (58), Mumbai (43), Rajkot (38). Regional city-targeted campaigns could drive significant leads.</div></div>
+    <div class="insight-card warn"><div class="insight-icon">📋</div><div class="insight-title">34 form starts — track completions</div><div class="insight-body">File downloads hit 91 this month (up from last). Set up form_submit event tracking to measure how many of 34 form starts actually convert to enquiries.</div></div>
+  </div>
+
+  <div class="report-footer">VerdeMobility · Google Analytics 4 · May 1–29, 2026 · Generated June 2, 2026</div>
+</div>
+</div>
+
+<!-- ═══════════════ SLS ═══════════════ -->
+<div id="tab-sls" class="site-content">
+<div class="content">
+  <div class="report-header">
+    <div>
+      <h1>System Level Solutions · May 2026</h1>
+      <p>slscorp.com · GA4 · Report Period: May 1 – 29, 2026</p>
+    </div>
+    <div class="mom-summary">
+      vs April 2026<br>
+      <strong>Users: 1,287 → 1,817 &nbsp;▲41%</strong><br>
+      Sessions: 1,572 → 2,094 &nbsp;▲33%<br>
+      Views: 2,427 → 3,108 &nbsp;▲28%
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi" style="--kpi-color:#0f5fa8">
+      <div class="kpi-label">Active Users</div>
+      <div class="kpi-value">1,817</div>
+      <div class="kpi-meta"><span class="kpi-note">1,760 new (96.9%)</span><span class="kpi-mom up">▲ 41%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#0891b2">
+      <div class="kpi-label">Sessions</div>
+      <div class="kpi-value">2,094</div>
+      <div class="kpi-meta"><span class="kpi-note">5 channels</span><span class="kpi-mom up">▲ 33%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#f59e0b">
+      <div class="kpi-label">Page Views</div>
+      <div class="kpi-value">3,108</div>
+      <div class="kpi-meta"><span class="kpi-note">68+ pages</span><span class="kpi-mom up">▲ 28%</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#10b981">
+      <div class="kpi-label">Avg. Session Time</div>
+      <div class="kpi-value">27s</div>
+      <div class="kpi-meta"><span class="kpi-note">Weighted avg.</span><span class="kpi-mom flat">— n/a</span></div>
+    </div>
+    <div class="kpi" style="--kpi-color:#7c3aed">
+      <div class="kpi-label">Scroll + Clicks</div>
+      <div class="kpi-value">1,635</div>
+      <div class="kpi-meta"><span class="kpi-note">30 form starts</span><span class="kpi-mom flat">—</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">📈 Daily Active Users — May 2026</span>
+      <span class="panel-sub">Spike on May 29 (day 28) — 626 users</span>
+    </div>
+    <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="sls-trend"></canvas></div></div>
+  </div>
+
+  <div class="col-6040">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">📄 Pages by Views</span><span class="panel-sub">Top 15</span></div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>#</th><th>Page</th><th style="text-align:right">Views</th><th style="text-align:right">Avg. Time</th><th style="min-width:80px">Share</th></tr></thead>
+          <tbody id="sls-pages"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🔗 Traffic Sources</span><span class="panel-sub">% + Sessions on hover</span></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:160px"><canvas id="sls-traffic"></canvas></div>
+        <table style="margin-top:14px">
+          <thead><tr><th>Channel</th><th style="text-align:right">Sessions</th><th style="text-align:right">Eng. Rate</th><th style="text-align:right">Avg. Time</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="background:#0f5fa8"></span>Direct</td><td class="num">1,220</td><td class="eng">14.5%</td><td class="eng">8.8s</td></tr>
+            <tr><td><span class="dot" style="background:#0891b2"></span>Organic Search</td><td class="num">792</td><td class="eng">64.8%</td><td class="eng">53.4s</td></tr>
+            <tr><td><span class="dot" style="background:#f59e0b"></span>Referral</td><td class="num">60</td><td class="eng">71.7%</td><td class="eng">57.9s</td></tr>
+            <tr><td><span class="dot" style="background:#8b5cf6"></span>Organic Social</td><td class="num">14</td><td class="eng">50.0%</td><td class="eng">20.6s</td></tr>
+            <tr><td><span class="dot" style="background:#94a3b8"></span>Unassigned</td><td class="num">8</td><td class="eng">25.0%</td><td class="eng">26.6s</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🌍 Top Countries</span><span class="panel-sub">% of total</span></div>
+      <div class="panel-body"><div class="chart-wrap" style="height:190px"><canvas id="sls-geo"></canvas></div></div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">👥 Audience Demographics</span></div>
+      <div class="panel-body">
+        <div class="two-col" style="gap:12px;margin-bottom:0">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Age Groups</div>
+            <div class="chart-wrap" style="height:120px"><canvas id="sls-age"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Device Type</div>
+            <div class="chart-wrap" style="height:120px"><canvas id="sls-device"></canvas></div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Gender Split (known)</div>
+          <div style="display:flex;gap:16px;align-items:center">
+            <div style="flex:1;background:var(--bg);border-radius:8px;overflow:hidden;height:18px;display:flex">
+              <div style="width:81.3%;background:#3b82f6;height:100%;border-radius:8px 0 0 8px"></div>
+              <div style="flex:1;background:#f472b6;height:100%;border-radius:0 8px 8px 0"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);white-space:nowrap"><span style="color:#3b82f6;font-weight:700">♂ 81.3%</span> &nbsp; <span style="color:#f472b6;font-weight:700">♀ 18.7%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">💻 Operating System</span><span class="panel-sub">% share on axis</span></div>
+      <div class="panel-body"><div class="chart-wrap" style="height:160px"><canvas id="sls-os"></canvas></div></div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-head"><span class="panel-title">🌐 Browser</span><span class="panel-sub">% share</span></div>
+      <div class="panel-body"><div class="chart-wrap" style="height:160px"><canvas id="sls-browser"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="panel-head" style="padding:0;margin-bottom:12px"><span class="panel-title" style="font-size:14px">💡 Marketing Insights</span></div>
+  <div class="insights-grid">
+    <div class="insight-card good"><div class="insight-icon">🚀</div><div class="insight-title">Massive 41% user growth MoM</div><div class="insight-body">Users jumped from 1,287 to 1,817. May 29 saw a 626-user spike — likely a campaign, press mention, or viral link. Identify the source and replicate it.</div></div>
+    <div class="insight-card info"><div class="insight-icon">🇨🇦🇲🇽</div><div class="insight-title">Canada (300) & Mexico (194) are new key markets</div><div class="insight-body">These weren't significant in April. Investigate what drove this — could be a directory listing, LinkedIn post, or partner site. Target these regions with dedicated content.</div></div>
+    <div class="insight-card warn"><div class="insight-icon">⚠️</div><div class="insight-title">Direct traffic disengages fast (8.8s)</div><div class="insight-body">1,220 Direct sessions but only 14.5% engagement — visitors leave in under 9 seconds. Homepage first impression needs stronger CTAs and clear value proposition.</div></div>
+  </div>
+
+  <div class="report-footer">System Level Solutions (slscorp.com) · Google Analytics 4 · May 1–29, 2026 · Generated June 2, 2026</div>
+</div>
+</div>
+
+<script>
+// ── TAB SWITCHER ──
+function switchTab(id,el){
+  document.querySelectorAll('.site-content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.site-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── HELPERS ──
+function pct(v,total){return parseFloat((v/total*100).toFixed(1));}
+function fmtTime(s){if(s>=60)return Math.floor(s/60)+'m '+Math.round(s%60)+'s';return Math.round(s)+'s';}
+const TICK_OPTS={font:{size:10},color:'#96a0bb'};
+const GRID_COLOR='#eef0f8';
+
+function donutChart(id,labels,raw,colors){
+  const total=raw.reduce((a,b)=>a+b,0);
+  const pcts=raw.map(v=>pct(v,total));
+  new Chart(document.getElementById(id),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:pcts,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:6,usePointStyle:true,
+        generateLabels:()=>labels.map((l,i)=>({text:`${l} (${pcts[i]}%)`,fillStyle:colors[i],strokeStyle:'#fff',lineWidth:0,index:i}))
+      }},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${pcts[ctx.dataIndex]}% (${raw[ctx.dataIndex]})`}}
+    },cutout:'62%'}
+  });
+}
+
+function barChartH(id,labels,raw,color){
+  const total=raw.reduce((a,b)=>a+b,0);
+  const pcts=raw.map(v=>pct(v,total));
+  new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels,datasets:[{data:pcts,backgroundColor:color,borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.x}% (${raw[ctx.dataIndex]} users)`}}},
+      scales:{x:{grid:{color:GRID_COLOR},ticks:{...TICK_OPTS,callback:v=>v+'%'},beginAtZero:true},y:{grid:{display:false},ticks:TICK_OPTS}}
+    }
+  });
+}
+
+function barChartV(id,labels,raw,colors){
+  const total=raw.reduce((a,b)=>a+b,0);
+  const pcts=raw.map(v=>pct(v,total));
+  new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels,datasets:[{data:pcts,backgroundColor:colors,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}% (${raw[ctx.dataIndex]})`}}},
+      scales:{x:{grid:{display:false},ticks:TICK_OPTS},y:{grid:{color:GRID_COLOR},ticks:{...TICK_OPTS,callback:v=>v+'%'},beginAtZero:true}}
+    }
+  });
+}
+
+function buildPagesTable(tbodyId,pages,accentColor){
+  const maxV=pages[0].v;
+  const totalV=pages.reduce((a,p)=>a+p.v,0);
+  const tbody=document.getElementById(tbodyId);
+  pages.forEach((p,i)=>{
+    const share=pct(p.v,totalV);
+    const w=Math.round(p.v/maxV*100);
+    tbody.innerHTML+=`<tr>
+      <td><span class="rank">${i+1}</span></td>
+      <td style="font-size:11px;color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.path}">${p.path}</td>
+      <td class="num">${p.v}</td>
+      <td class="eng">${p.t}</td>
+      <td><div class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${w}%;background:${accentColor}"></div></div><span style="font-size:10px;color:var(--text3);min-width:26px">${share}%</span></div></td>
+    </tr>`;
+  });
+}
+
+function trendChart(id,daily,sessionTimes,color){
+  const labels=daily.map((_,i)=>i%4===0?`May ${i+1}`:'');
+  new Chart(document.getElementById(id),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Active Users',data:daily,borderColor:color,backgroundColor:color.replace(')',',0.08)').replace('rgb','rgba'),borderWidth:2.5,pointRadius:3,pointBackgroundColor:color,tension:.4,fill:true,yAxisID:'y'},
+      {label:'Avg. Session Time (s)',data:sessionTimes,borderColor:'#f59e0b',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,borderDash:[4,3],tension:.4,fill:false,yAxisID:'y1'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:10},padding:12,usePointStyle:true}},
+        tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===0?`${ctx.parsed.y} users`:`${Math.round(ctx.parsed.y)}s avg time`}}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:TICK_OPTS},
+        y:{grid:{color:GRID_COLOR},ticks:TICK_OPTS,beginAtZero:true,position:'left'},
+        y1:{grid:{display:false},ticks:{...TICK_OPTS,callback:v=>v+'s'},beginAtZero:true,position:'right'}
+      }
+    }
+  });
+}
+
+// ════ NEBULAE DATA ════
+trendChart('neb-trend',
+  [6,2,1,15,12,9,10,11,4,8,12,6,13,10,8,4,7,9,6,5,5,9,3,10,4,4,5,7,1],
+  [0,6,71,4,8,78,50,53,0,14,18,46,15,11,58,3,14,4,23,15,10,6,0,0,1,40,0,1,0],
+  'rgb(109,40,217)'
+);
+buildPagesTable('neb-pages',[
+  {path:'/',v:131,t:'8.5s'},{path:'/Home/Blogs',v:24,t:'0.8s'},{path:'/Home/Gateway',v:20,t:'134.5s'},
+  {path:'/Home/Node',v:18,t:'44.6s'},{path:'/Home/Index',v:16,t:'28.7s'},{path:'/nebulae-resource/',v:13,t:'2.3s'},
+  {path:'/Home/ContactUs',v:9,t:'18.9s'},{path:'/Home/AboutUs',v:8,t:'10.8s'},{path:'/Home/IoTMarketPlace',v:8,t:'22s'},
+  {path:'/Home/Library',v:8,t:'55s'},{path:'/Home/Analytics',v:4,t:'11.6s'},{path:'/Home/LoRaWAN',v:4,t:'25.3s'}
+],'#6d28d9');
+donutChart('neb-traffic',['Direct','Referral','Organic Search','Unassigned'],[160,30,29,9],['#6d28d9','#0891b2','#10b981','#94a3b8']);
+barChartH('neb-geo',['India','USA','Singapore','Vietnam','China','Germany','France'],[54,30,20,16,9,7,6],'rgba(109,40,217,0.8)');
+donutChart('neb-device',['Desktop','Mobile'],[169,30],['#6d28d9','#0891b2']);
+barChartV('neb-os',['Win','Mac','Android','iOS','Linux'],[135,20,15,15,14],['#6d28d9','#0891b2','#10b981','#f59e0b','#94a3b8']);
+donutChart('neb-browser',['Chrome','Safari','Edge','Firefox','Samsung'],[176,11,5,4,2],['#6d28d9','#0891b2','#10b981','#f59e0b','#94a3b8']);
+
+// ════ VERDEMOBILITY DATA ════
+trendChart('verde-trend',
+  [23,17,10,24,28,19,25,25,14,17,27,26,50,55,63,40,26,30,34,27,23,35,25,21,25,27,30,42,12],
+  [21,74,24,66,54,101,40,54,28,17,48,67,34,48,44,22,57,39,71,99,93,64,37,41,68,33,41,42,175],
+  'rgb(22,163,74)'
+);
+buildPagesTable('verde-pages',[
+  {path:'/',v:895,t:'14.7s'},{path:'/get-in-touch',v:200,t:'41.5s'},{path:'/hardware',v:168,t:'77.1s'},
+  {path:'/controllers',v:152,t:'89.2s'},{path:'/partner-with-us',v:59,t:'33.1s'},{path:'/host-charger',v:48,t:'32.7s'},
+  {path:'/mobile-app',v:41,t:'54.7s'},{path:'/product-launch',v:39,t:'20s'},{path:'/about',v:30,t:'44.1s'},
+  {path:'/hardware/',v:29,t:'37.6s'},{path:'/cms',v:23,t:'30.5s'},{path:'/fleet',v:15,t:'23.6s'}
+],'#16a34a');
+(()=>{
+  const r=[542,384,42,16,12,8],t=r.reduce((a,b)=>a+b,0),p=r.map(v=>pct(v,t));
+  const cols=['#16a34a','#3b82f6','#f59e0b','#94a3b8','#8b5cf6','#06b6d4'];
+  const lbls=['Organic Search','Direct','Referral','Unassigned','Organic Social','Organic Video'];
+  new Chart(document.getElementById('verde-traffic'),{type:'doughnut',data:{labels:lbls,datasets:[{data:p,backgroundColor:cols,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:6,usePointStyle:true,
+      generateLabels:()=>lbls.map((l,i)=>({text:`${l} (${p[i]}%)`,fillStyle:cols[i],strokeStyle:'#fff',lineWidth:0,index:i}))}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${p[ctx.dataIndex]}% (${r[ctx.dataIndex]} sessions)`}}},cutout:'62%'}});
+})();
+barChartH('verde-geo',['India','USA','Germany','Singapore','Poland','China','UK'],[608,92,14,13,10,7,4],'rgba(22,163,74,0.8)');
+barChartV('verde-age',['18-24','25-34','35-44','45-54'],[52,72,64,25],['#3b82f6','#16a34a','#f59e0b','#8b5cf6']);
+donutChart('verde-device',['Desktop','Mobile','Tablet'],[437,349,1],['#16a34a','#3b82f6','#f59e0b']);
+
+// ════ SLS DATA ════
+trendChart('sls-trend',
+  [40,36,26,35,37,65,48,72,35,23,55,43,64,47,65,29,22,47,53,45,47,45,29,23,48,53,69,52,626],
+  [41,20,19,45,60,70,26,41,28,20,61,49,52,76,70,85,27,42,28,51,50,29,60,17,42,31,45,28,1],
+  'rgb(15,95,168)'
+);
+buildPagesTable('sls-pages',[
+  {path:'/',v:1246,t:'18s'},{path:'/contact',v:334,t:'48.7s'},{path:'/about',v:207,t:'44.5s'},
+  {path:'/index.html',v:129,t:'22.4s'},{path:'/home',v:92,t:'47.4s'},{path:'/evcharger',v:54,t:'80.1s'},
+  {path:'/iot',v:50,t:'64.5s'},{path:'/ipcore',v:43,t:'29.4s'},{path:'/solar',v:36,t:'27.8s'},
+  {path:'/smartmeter',v:31,t:'30.9s'},{path:'/electronics',v:28,t:'58.3s'},{path:'/gaming',v:23,t:'21.9s'},
+  {path:'/cloud',v:22,t:'45.9s'},{path:'/softdev',v:22,t:'50.9s'},{path:'/highspeed',v:8,t:'115.6s'}
+],'#0f5fa8');
+(()=>{
+  const r=[1220,792,60,14,8],t=r.reduce((a,b)=>a+b,0),p=r.map(v=>pct(v,t));
+  const cols=['#0f5fa8','#0891b2','#f59e0b','#8b5cf6','#94a3b8'];
+  const lbls=['Direct','Organic Search','Referral','Organic Social','Unassigned'];
+  new Chart(document.getElementById('sls-traffic'),{type:'doughnut',data:{labels:lbls,datasets:[{data:p,backgroundColor:cols,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},padding:6,usePointStyle:true,
+      generateLabels:()=>lbls.map((l,i)=>({text:`${l} (${p[i]}%)`,fillStyle:cols[i],strokeStyle:'#fff',lineWidth:0,index:i}))}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${p[ctx.dataIndex]}% (${r[ctx.dataIndex]} sessions)`}}},cutout:'62%'}});
+})();
+barChartH('sls-geo',['India','Canada','Mexico','USA','Singapore','China','Venezuela'],[741,300,194,182,110,82,33],'rgba(15,95,168,0.82)');
+barChartV('sls-age',['18-24','25-34','35-44','45-54','55-64'],[119,105,84,34,11],['#0f5fa8','#0891b2','#f59e0b','#8b5cf6','#94a3b8']);
+donutChart('sls-device',['Desktop','Mobile','Tablet'],[1430,386,1],['#0f5fa8','#0891b2','#f59e0b']);
+(()=>{
+  const r=[967,395,313,74,56,4],t=r.reduce((a,b)=>a+b,0),p=r.map(v=>pct(v,t));
+  new Chart(document.getElementById('sls-os'),{type:'bar',data:{labels:['Windows','Mac','Android','iOS','Linux','ChromeOS'],datasets:[{data:p,backgroundColor:['#0f5fa8','#0891b2','#f59e0b','#8b5cf6','#94a3b8','#10b981'],borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}% (${r[ctx.dataIndex]})`}}},
+      scales:{x:{grid:{display:false},ticks:TICK_OPTS},y:{grid:{color:GRID_COLOR},ticks:{...TICK_OPTS,callback:v=>v+'%'},beginAtZero:true}}}});
+})();
+donutChart('sls-browser',['Chrome','Edge','Safari','Android WV','Firefox','Others'],[1599,82,55,40,15,16],['#0f5fa8','#0891b2','#f59e0b','#10b981','#f97316','#94a3b8']);
+</script>
+</body>
+</html>
